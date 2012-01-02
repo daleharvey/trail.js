@@ -1,3 +1,5 @@
+var Trail = {};
+
 Trail.Router = (function() {
 
   var PATH_MATCHER = /:([\w\d]+)/g;
@@ -182,25 +184,33 @@ Trail.View = (function() {
     }
 
     var tplData = $.extend({}, this.data, opts.data || {});
-    var source = $('#' + this.template + '-tpl').html();
-    var data = Handlebars.compile(source)(tplData);
+    var source = $(this.template).html();
+    var $dom = $(Handlebars.compile(source)(tplData));
 
-    if (this.preRender) {
-      if (this.preRender() === false) {
-        return;
+    // postRender needs a nicer implementation than just creating a predefined function
+    // it allows you do do some post processing on the template before it goes in the
+    // dom, like bind events, it can also cancel the rendering of this template
+    if (this.postRender) {
+      $dom = this.postRender($dom);
+      if ($dom === false) {
+        return false;
       }
     }
 
     if (this.container) {
-      $(this.container).empty().append(data);
+      $(this.container).empty().append($dom);
     }
 
-    if (this.postRender) {
-      this.postRender();
+    // Shims allow you to globally specify functions that work on all rendered
+    // templates, perfect for implementing shims for things like <input type="color"
+    // They may be run on the same dom multiple times, so need to not be additive
+    if (this.shim) {
+      this.shim($dom);
     }
+
     currentView = this;
 
-    return data;
+    return $dom;
   };
 
 
