@@ -187,6 +187,13 @@ Trail.View = (function() {
     var source = $(this.template).html();
     var $dom = $(Handlebars.compile(source)(tplData));
 
+    // Shims allow you to globally specify functions that work on all rendered
+    // templates, perfect for implementing shims for things like <input type="color"
+    // They may be run on the same dom multiple times, so need to not be additive
+    if (this.shim) {
+      this.shim($dom);
+    }
+
     // postRender needs a nicer implementation than just creating a predefined function
     // it allows you do do some post processing on the template before it goes in the
     // dom, like bind events, it can also cancel the rendering of this template
@@ -199,13 +206,6 @@ Trail.View = (function() {
 
     if (this.container) {
       $(this.container).empty().append($dom);
-    }
-
-    // Shims allow you to globally specify functions that work on all rendered
-    // templates, perfect for implementing shims for things like <input type="color"
-    // They may be run on the same dom multiple times, so need to not be additive
-    if (this.shim) {
-      this.shim($dom);
     }
 
     currentView = this;
