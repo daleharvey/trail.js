@@ -166,12 +166,17 @@ Trail.Router = (function() {
 })();
 
 
+$.fn.findAll = function(selector) {
+  return this.find(selector).add(this.filter(selector));
+};
+
+
 // This I hacked together pretty quickly after seeing the ember views,
 // the view inheritance I am no so sure about and the extend method is
 // most definitely ugly
 Trail.View = (function() {
 
-
+  this.shims = {};
   this.data = {};
 
 
@@ -189,9 +194,14 @@ Trail.View = (function() {
 
     // Shims allow you to globally specify functions that work on all rendered
     // templates, perfect for implementing shims for things like <input type="color"
-    // They may be run on the same dom multiple times, so need to not be additive
-    if (this.shim) {
-      this.shim($dom);
+    var self = this;
+    for (var selector in this.shims) {
+      $dom.findAll(selector).each(function () {
+        if (!$(this).data('processed-' + selector)) {
+          $(this).data('processed-' + selector, true);
+          self.shims[selector].apply(this);
+        }
+      });
     }
 
     // postRender needs a nicer implementation than just creating a predefined function
@@ -214,15 +224,22 @@ Trail.View = (function() {
   };
 
 
+  this.addShim = function(key, callback) {
+    this.shims[key] = callback;
+  };
+
+
   this.extend = function(obj) {
     return $.extend({}, this, obj);
   };
 
 
   return {
+    shims: this.shims,
     data: this.data,
     extend: this.extend,
-    render: this.render
+    render: this.render,
+    addShim: this.addShim
   };
 
 })();
