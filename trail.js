@@ -190,13 +190,13 @@ Trail.View = (function() {
 
     var tplData = $.extend({}, this.data, opts.data || {});
     var source = $(this.template).html();
-    var $dom = $(Handlebars.compile(source)(tplData));
+    this.$dom = $(Handlebars.compile(source)(tplData));
 
     // Shims allow you to globally specify functions that work on all rendered
     // templates, perfect for implementing shims for things like <input type="color"
     var self = this;
     for (var selector in this.shims) {
-      $dom.findAll(selector).each(function () {
+      this.$dom.findAll(selector).each(function () {
         if (!$(this).data('processed-' + selector)) {
           $(this).data('processed-' + selector, true);
           self.shims[selector].apply(this);
@@ -208,19 +208,23 @@ Trail.View = (function() {
     // it allows you do do some post processing on the template before it goes in the
     // dom, like bind events, it can also cancel the rendering of this template
     if (this.postRender) {
-      $dom = this.postRender($dom);
-      if ($dom === false) {
+      this.$dom = this.postRender(this.$dom);
+      if (this.$dom === false) {
         return false;
       }
     }
 
+    if (this.jointContainer) {
+      $(this.jointContainer).append(this.$dom);
+    }
+
     if (this.container) {
-      $(this.container).empty().append($dom);
+      $(this.container).empty().append(this.$dom);
     }
 
     currentView = this;
 
-    return $dom;
+    return this.$dom;
   };
 
 
