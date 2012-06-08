@@ -1,6 +1,6 @@
 var Trail = {};
 
-Trail.Router = (function() {
+Trail.Router = (function($) {
 
   var PATH_MATCHER = /:([\w\d]+)/g;
   var PATH_REPLACER = "([^\/]+)";
@@ -246,4 +246,4 @@ Trail.View = (function() {
     addShim: this.addShim
   };
 
-})();
+})(jQuery);
